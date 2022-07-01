@@ -290,6 +290,8 @@ namespace openvpn {
 	      first_packet_received_ = true;
 	    }
 
+		scrambleBuffer(buf, Base::conf().scramble, true);
+
 	  // get packet type
 	  Base::PacketType pt = Base::packet_type(buf);
 
@@ -390,6 +392,7 @@ namespace openvpn {
 		  {
 		    // send packet via transport to destination
 		    OPENVPN_LOG_CLIPROTO("Transport SEND " << server_endpoint_render() << ' ' << Base::dump_packet(buf));
+				scrambleBuffer(buf, Base::conf().scramble, false);
 		    if (transport->transport_send(buf))
 		      Base::update_last_sent();
 		    else if (halt)

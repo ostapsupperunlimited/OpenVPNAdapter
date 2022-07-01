@@ -55,6 +55,7 @@
 #include <openvpn/client/cliopthelper.hpp>
 #include <openvpn/client/optfilt.hpp>
 #include <openvpn/client/clilife.hpp>
+#include <openvpn/client/scramble.hpp>
 
 #include <openvpn/ssl/sslchoose.hpp>
 
@@ -747,6 +748,7 @@ namespace openvpn {
       cp->now = &now_;
       cp->rng = rng;
       cp->prng = prng;
+      cp->scramble = pcc.scrambleConfig();
 
       return cp;
     }
