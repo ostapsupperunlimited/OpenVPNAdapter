@@ -42,6 +42,7 @@
 #include <openvpn/common/userpass.hpp>
 #include <openvpn/client/remotelist.hpp>
 #include <openvpn/client/cliconstants.hpp>
+#include <openvpn/client/scramble.hpp>
 #include <openvpn/ssl/peerinfo.hpp>
 #include <openvpn/ssl/proto.hpp>
 #include <openvpn/ssl/proto_context_options.hpp>
@@ -64,6 +65,16 @@ namespace openvpn {
       std::string port;
       std::string proto;
     };
+
+ 		XORMethod from_string(std::string const& str)
+    {
+      if(str == "xormask") return XOR_MASK;
+      if(str == "xorptrpos") return XOR_PTR_POS;
+      if(str == "reverse") return REVERSE;
+      if(str == "obfuscate") return OBFUSCATE;
+
+      return NONE;
+    }
 
     ParseClientConfig()
     {
@@ -172,6 +183,51 @@ namespace openvpn {
 	  if (o)
 	    allowPasswordSave_ = parse_bool(*o, "allow-password-save", 1);
 	}
+
+{
+      const Option* o = options.get_ptr("scramble");
+      if (o)
+      {
+        o->min_args(1);
+        typedef std::vector<std::string> strvec;
+        if (o->size() >= 1)
+        {
+            Scramble sc;
+            std::string method = o->get(1, 100);
+
+            switch(from_string(method))
+            {
+                case XOR_MASK:
+                    o->min_args(2);
+                    sc.xormethod = XOR_MASK;
+                    sc.xormask = o->get(2, 255);
+                    sc.xormasklen = sc.xormask.length();
+                    break;
+
+                case XOR_PTR_POS:
+                    sc.xormethod = XOR_PTR_POS;
+                    break;
+
+                case REVERSE:
+                    sc.xormethod = REVERSE;
+                    break;
+
+                case OBFUSCATE:
+                    o->min_args(2);
+                    sc.xormethod = OBFUSCATE;
+                    sc.xormask = o->get(2, 255);
+                    sc.xormasklen = sc.xormask.length();
+                    break;
+
+                default:
+                    sc.xormethod = NONE;
+                    break;
+            }
+
+            scramble_ = sc;
+        }
+      }
+  	}
 
 	// autologin
 	{
@@ -421,6 +477,9 @@ namespace openvpn {
 
     // static challenge, may be empty, ignored if autologin
     const std::string& staticChallenge() const { return staticChallenge_; }
+
+		// return scramble configuration
+    const Scramble& scrambleConfig() const { return scramble_; }
 
     // true if static challenge response should be echoed to UI, ignored if autologin
     bool staticChallengeEcho() const { return staticChallengeEcho_; }
@@ -708,6 +767,7 @@ namespace openvpn {
     std::string userlockedUsername_;
     std::string profileName_;
     std::string friendlyName_;
+		Scramble scramble_;
     bool autologin_;
     bool clientCertEnabled_;
     bool externalPki_;

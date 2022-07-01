@@ -218,6 +218,49 @@ namespace openvpn {
       offset_ = size_ = 0;
     }
 
+    const size_t mask(const std::string mask, size_t xormasklen) {
+      int i;
+      T *b;
+
+      for (i = 0, b = data(); i < length(); i++, b++) {
+        *b = *b ^ mask[i % xormasklen];
+      }
+
+      return length();
+    }
+
+    const size_t xorptrpos()
+    {
+      int i;
+      T *b;
+      for (i = 0, b = data(); i < length(); i++, b++) {
+        *b = *b ^ i+1;
+      }
+
+      return length();
+    }
+
+    const size_t reverse()
+    {
+      size_t len = length();
+      if (  len > 2  )
+      {
+        int i;
+        T *b_start = data() + 1;
+        T *b_end = data_end() - 1;
+        T tmp;
+
+        for (i = 0; i < (len-1)/2; i++, b_start++, b_end--)
+        {
+          tmp = *b_start;
+          *b_start = *b_end;
+          *b_end = tmp;
+        }
+      }
+
+      return len;
+    }
+    
     // std::string compatible methods
     const T* c_str() const { return c_data(); }
     size_t length() const { return size(); }

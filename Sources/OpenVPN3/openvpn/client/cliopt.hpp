@@ -55,6 +55,7 @@
 #include <openvpn/client/cliopthelper.hpp>
 #include <openvpn/client/optfilt.hpp>
 #include <openvpn/client/clilife.hpp>
+#include <openvpn/client/scramble.hpp>
 
 #include <openvpn/ssl/sslchoose.hpp>
 
@@ -730,6 +731,7 @@ namespace openvpn {
       cc->set_tls_cert_profile_override(config.tls_cert_profile_override);
       cc->set_tls_cipher_list(config.tls_cipher_list);
       cc->set_tls_ciphersuite_list(config.tls_ciphersuite_list);
+      
       if (!cc->get_mode().is_client())
 	throw option_error("only client configuration supported");
 
@@ -750,6 +752,7 @@ namespace openvpn {
       cp->now = &now_;
       cp->rng = rng;
       cp->prng = prng;
+      cp->scramble = pcc.scrambleConfig();
 
       return cp;
     }
